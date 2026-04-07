@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import type { ResumoDashboard, SavingGeral, HistoricoPrecos } from "@/lib/types";
+import type { ResumoDashboard, SavingGeral, HistoricoPrecos, SlaFornecedor } from "@/lib/types";
 
 export function useResumoDashboard() {
   return useQuery<ResumoDashboard>({
@@ -18,6 +18,13 @@ export function useSavingGeral(dataInicio?: string, dataFim?: string) {
           params: { data_inicio: dataInicio, data_fim: dataFim },
         })
         .then((r) => r.data),
+  });
+}
+
+export function useSlaMetrics() {
+  return useQuery<SlaFornecedor[]>({
+    queryKey: ["dashboard", "sla"],
+    queryFn: () => api.get("/dashboard/sla").then((r) => r.data),
   });
 }
 

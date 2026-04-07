@@ -33,3 +33,11 @@ export function useRemoverCategoria() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["categorias"] }),
   });
 }
+
+export function useSincronizarSegmentos() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post("/categorias/sincronizar-segmentos"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["categorias"] }),
+  });
+}

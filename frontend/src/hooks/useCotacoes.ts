@@ -6,6 +6,8 @@ export function useSessoesCotacao() {
   return useQuery<SessaoCotacao[]>({
     queryKey: ["sessoes-cotacao"],
     queryFn: () => api.get("/cotacoes/sessoes").then((r) => r.data),
+    refetchInterval: 15_000,       // atualiza status kanban a cada 15s
+    refetchOnWindowFocus: true,    // atualiza ao voltar para a aba
   });
 }
 

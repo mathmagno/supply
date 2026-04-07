@@ -2,7 +2,7 @@ from datetime import date
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, case
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -99,6 +99,61 @@ def historico_precos(
     return {"especificacao_id": especificacao_id, "series": [
         {"fornecedor": k, "dados": v} for k, v in por_fornecedor.items()
     ]}
+
+
+@router.get("/sla")
+def sla_metrics(db: Session = Depends(get_db), _=Depends(get_usuario_atual)):
+    """Tempo médio de resposta (cotando→pedido_emitido) e entrega (pedido_emitido→recebido) por fornecedor."""
+
+    # Tempo de resposta: dias entre criado_em e data_pedido
+    resposta = (
+        db.query(
+            Pedido.fornecedor_id,
+            Fornecedor.nome.label("fornecedor_nome"),
+            func.avg(
+                func.julianday(Pedido.data_pedido) - func.julianday(Pedido.criado_em)
+            ).label("tempo_resposta_medio"),
+            func.count(Pedido.id).label("total_com_emissao"),
+        )
+        .join(Fornecedor, Pedido.fornecedor_id == Fornecedor.id)
+        .filter(Pedido.data_pedido.isnot(None))
+        .group_by(Pedido.fornecedor_id)
+        .all()
+    )
+
+    # Tempo de entrega: dias entre data_pedido e data_recebimento
+    entrega = (
+        db.query(
+            Pedido.fornecedor_id,
+            func.avg(
+                func.julianday(Pedido.data_recebimento) - func.julianday(Pedido.data_pedido)
+            ).label("tempo_entrega_medio"),
+            func.count(Pedido.id).label("total_recebidos"),
+        )
+        .filter(
+            Pedido.status == StatusPedido.RECEBIDO,
+            Pedido.data_pedido.isnot(None),
+            Pedido.data_recebimento.isnot(None),
+        )
+        .group_by(Pedido.fornecedor_id)
+        .all()
+    )
+
+    entrega_map = {r.fornecedor_id: r for r in entrega}
+
+    resultado = []
+    for r in resposta:
+        ent = entrega_map.get(r.fornecedor_id)
+        resultado.append({
+            "fornecedor": r.fornecedor_nome,
+            "tempo_resposta_medio": round(float(r.tempo_resposta_medio), 1) if r.tempo_resposta_medio else None,
+            "tempo_entrega_medio": round(float(ent.tempo_entrega_medio), 1) if ent and ent.tempo_entrega_medio else None,
+            "total_com_emissao": r.total_com_emissao,
+            "total_recebidos": ent.total_recebidos if ent else 0,
+        })
+
+    resultado.sort(key=lambda x: x["tempo_resposta_medio"] or 9999)
+    return resultado
 
 
 @router.get("/resumo")

@@ -145,10 +145,14 @@ def listar(
 
 @router.post("/", response_model=FornecedorOut, status_code=201)
 def criar(payload: FornecedorCreate, db: Session = Depends(get_db), _=Depends(get_usuario_atual)):
+    from app.routes.categorias import obter_ou_criar_categoria
     if db.query(Fornecedor).filter(Fornecedor.nome == payload.nome).first():
         raise HTTPException(status_code=400, detail="Fornecedor já cadastrado.")
     fornecedor = Fornecedor(**payload.model_dump())
     db.add(fornecedor)
+    # Auto-criar categoria com o mesmo nome do segmento
+    if payload.segmento:
+        obter_ou_criar_categoria(db, payload.segmento)
     db.commit()
     db.refresh(fornecedor)
     return fornecedor
@@ -164,11 +168,15 @@ def obter(id: int, db: Session = Depends(get_db), _=Depends(get_usuario_atual)):
 
 @router.patch("/{id}", response_model=FornecedorOut)
 def atualizar(id: int, payload: FornecedorUpdate, db: Session = Depends(get_db), _=Depends(get_usuario_atual)):
+    from app.routes.categorias import obter_ou_criar_categoria
     f = db.get(Fornecedor, id)
     if not f:
         raise HTTPException(status_code=404, detail="Fornecedor não encontrado.")
     for campo, valor in payload.model_dump(exclude_none=True).items():
         setattr(f, campo, valor)
+    # Auto-criar categoria ao editar segmento
+    if payload.segmento:
+        obter_ou_criar_categoria(db, payload.segmento)
     db.commit()
     db.refresh(f)
     return f

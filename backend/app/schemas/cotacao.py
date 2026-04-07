@@ -27,7 +27,11 @@ class PrecoFornecedorOut(BaseModel):
     fornecedor_nome: str
     preco: Decimal
     posicao_planilha: int | None = None
-    menor_preco: bool = False  # flag calculada no serviço
+    menor_preco: bool = False
+    # métricas de desempenho calculadas a partir do histórico de pedidos
+    lead_time_medio: float | None = None
+    taxa_pontualidade: float | None = None   # 0.0 a 1.0
+    total_pedidos_recebidos: int = 0
 
 
 class CotacaoComparativaOut(BaseModel):

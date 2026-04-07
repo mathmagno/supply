@@ -45,16 +45,19 @@ export function useAtualizarStatusPedido() {
       status,
       custo_comprado,
       data_recebimento,
+      data_pedido,
     }: {
       id: number;
       status: StatusPedido;
       custo_comprado?: number;
       data_recebimento?: string;
-    }) => api.patch(`/pedidos/${id}`, { status, custo_comprado, data_recebimento }),
+      data_pedido?: string;
+    }) => api.patch(`/pedidos/${id}`, { status, custo_comprado, data_recebimento, data_pedido }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["pedidos"] });
       qc.invalidateQueries({ queryKey: ["kanban"] });
       qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["sessoes-cotacao"] }); // atualiza badge de status
     },
   });
 }

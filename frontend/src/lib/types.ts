@@ -38,6 +38,10 @@ export interface SessaoCotacao {
   descricao: string | null;
   arquivo_origem: string | null;
   criado_em: string;
+  total_produtos: number;
+  total_fornecedores: number;
+  tem_pedidos: boolean;
+  status_kanban: string | null;
 }
 
 export interface PrecoFornecedor {
@@ -46,6 +50,9 @@ export interface PrecoFornecedor {
   preco: string;
   posicao_planilha: number | null;
   menor_preco: boolean;
+  lead_time_medio: number | null;
+  taxa_pontualidade: number | null;
+  total_pedidos_recebidos: number;
 }
 
 export interface CotacaoComparativa {
@@ -74,6 +81,17 @@ export interface PedidoKanban {
   prazo_fornecedor: string | null;
   prazo_vencido: boolean;
   prazo_proximo: boolean;
+  criado_em: string;
+  data_pedido: string | null;
+  data_recebimento: string | null;
+}
+
+export interface SlaFornecedor {
+  fornecedor: string;
+  tempo_resposta_medio: number | null;
+  tempo_entrega_medio: number | null;
+  total_com_emissao: number;
+  total_recebidos: number;
 }
 
 export interface Pedido {

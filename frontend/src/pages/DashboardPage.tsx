@@ -1,4 +1,4 @@
-import { useResumoDashboard, useSavingGeral } from "@/hooks/useDashboard";
+import { useResumoDashboard, useSavingGeral, useSlaMetrics } from "@/hooks/useDashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatarMoeda } from "@/lib/utils";
 import {
@@ -10,11 +10,12 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { ShoppingCart, Package, TrendingDown } from "lucide-react";
+import { ShoppingCart, Package, TrendingDown, Timer, Truck } from "lucide-react";
 
 export default function DashboardPage() {
   const { data: resumo } = useResumoDashboard();
   const { data: saving } = useSavingGeral();
+  const { data: sla } = useSlaMetrics();
 
   return (
     <div className="space-y-6">
@@ -60,6 +61,83 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* SLA por fornecedor */}
+      {sla && sla.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Timer className="h-5 w-5" />
+              SLA por Fornecedor
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="pb-2 pr-4 font-medium">Fornecedor</th>
+                    <th className="pb-2 pr-4 font-medium text-right">
+                      <span className="flex items-center justify-end gap-1">
+                        <Timer className="h-3.5 w-3.5" /> Tempo de Resposta
+                      </span>
+                    </th>
+                    <th className="pb-2 pr-4 font-medium text-right">
+                      <span className="flex items-center justify-end gap-1">
+                        <Truck className="h-3.5 w-3.5" /> Tempo de Entrega
+                      </span>
+                    </th>
+                    <th className="pb-2 font-medium text-right">Pedidos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sla.map((row) => (
+                    <tr key={row.fornecedor} className="border-b last:border-0">
+                      <td className="py-2 pr-4 font-medium">{row.fornecedor}</td>
+                      <td className="py-2 pr-4 text-right">
+                        {row.tempo_resposta_medio !== null ? (
+                          <span
+                            className={`font-mono ${
+                              row.tempo_resposta_medio > 3
+                                ? "text-red-600"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {row.tempo_resposta_medio}d
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-4 text-right">
+                        {row.tempo_entrega_medio !== null ? (
+                          <span
+                            className={`font-mono ${
+                              row.tempo_entrega_medio > 7
+                                ? "text-orange-600"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {row.tempo_entrega_medio}d
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="py-2 text-right text-muted-foreground">
+                        {row.total_recebidos}/{row.total_com_emissao}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Resposta &gt;3d em vermelho · Entrega &gt;7d em laranja · Pedidos: recebidos/emitidos
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Gráfico saving por fornecedor */}
       {saving && saving.por_fornecedor.length > 0 && (

@@ -73,5 +73,9 @@ class PedidoKanbanOut(BaseModel):
     prazo_fornecedor: date | None
     prazo_vencido: bool        # calculado no serviço
     prazo_proximo: bool        # dentro de 3 dias
+    # campos para SLA
+    criado_em: datetime
+    data_pedido: date | None
+    data_recebimento: date | None
 
     model_config = ConfigDict(from_attributes=True)

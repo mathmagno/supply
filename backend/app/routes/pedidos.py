@@ -14,11 +14,15 @@ router = APIRouter()
 
 COLUNAS_KANBAN = [
     StatusPedido.COTANDO,
-    StatusPedido.APROVADO,
     StatusPedido.PEDIDO_EMITIDO,
-    StatusPedido.EM_TRANSITO,
     StatusPedido.RECEBIDO,
 ]
+
+# Remapeia status legados para as 3 colunas
+_STATUS_COLUNA = {
+    StatusPedido.APROVADO: StatusPedido.COTANDO,
+    StatusPedido.EM_TRANSITO: StatusPedido.PEDIDO_EMITIDO,
+}
 
 _JOINS = [
     joinedload(Pedido.especificacao).joinedload(Especificacao.categoria),
@@ -46,15 +50,20 @@ def _to_kanban(p: Pedido) -> PedidoKanbanOut:
         prazo_fornecedor=p.prazo_fornecedor,
         prazo_vencido=vencido,
         prazo_proximo=proximo,
+        criado_em=p.criado_em,
+        data_pedido=p.data_pedido,
+        data_recebimento=p.data_recebimento,
     )
 
 
 @router.get("/kanban", response_model=dict[str, list[PedidoKanbanOut]])
 def kanban(db: Session = Depends(get_db), _=Depends(get_usuario_atual)):
     pedidos = db.query(Pedido).options(*_JOINS).all()
-    board = {col: [] for col in COLUNAS_KANBAN}
+    board: dict[str, list] = {col: [] for col in COLUNAS_KANBAN}
     for p in pedidos:
-        board[p.status].append(_to_kanban(p))
+        coluna = _STATUS_COLUNA.get(p.status, p.status)
+        if coluna in board:
+            board[coluna].append(_to_kanban(p))
     return board
 
 
@@ -98,12 +107,22 @@ def atualizar(id: int, payload: PedidoUpdate, db: Session = Depends(get_db), _=D
 
     dados = payload.model_dump(exclude_none=True)
 
+    if dados.get("status") == StatusPedido.PEDIDO_EMITIDO:
+        if not dados.get("data_pedido") and not p.data_pedido:
+            dados["data_pedido"] = date.today()
+
     if dados.get("status") == StatusPedido.RECEBIDO:
         custo_comprado = dados.get("custo_comprado", p.custo_comprado)
         if custo_comprado and p.custo_planejado:
             dados["saving"] = Decimal(str(p.custo_planejado)) - Decimal(str(custo_comprado))
         if not dados.get("data_recebimento"):
             dados["data_recebimento"] = date.today()
+        # Atualiza o último custo da especificação com o preço pago
+        if custo_comprado and p.especificacao_id:
+            from app.models.especificacao import Especificacao
+            spec = db.get(Especificacao, p.especificacao_id)
+            if spec:
+                spec.ultimo_custo = Decimal(str(custo_comprado))
 
     for campo, valor in dados.items():
         setattr(p, campo, valor)
