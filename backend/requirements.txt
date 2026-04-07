@@ -1,0 +1,26 @@
+# ── Web framework ──────────────────────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# ── Banco de dados ──────────────────────────────────────────────────────────
+sqlalchemy==2.0.36
+# pg8000                        # habilite para PostgreSQL/Supabase em produção
+alembic==1.14.0                 # migrações de banco
+
+# ── Autenticação ─────────────────────────────────────────────────────────────
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.2                   # passlib 1.7.4 não é compatível com bcrypt 4.x
+python-multipart==0.0.12        # form data / upload de arquivos
+
+# ── Configuração ─────────────────────────────────────────────────────────────
+pydantic-settings==2.6.1
+pydantic[email]==2.10.3
+
+# ── ETL / planilha ───────────────────────────────────────────────────────────
+openpyxl==3.1.5                 # puro Python, sem compilação
+
+# ── Testes ───────────────────────────────────────────────────────────────────
+pytest==8.3.4
+pytest-asyncio==0.24.0
+httpx==0.28.1                   # client assíncrono para testes FastAPI
