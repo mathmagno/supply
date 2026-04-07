@@ -60,6 +60,7 @@ export interface CotacaoComparativa {
   sessao_id: number;
   data_cotacao: string;
   precos: PrecoFornecedor[];
+  status_pedido: string | null;
 }
 
 export type StatusPedido =

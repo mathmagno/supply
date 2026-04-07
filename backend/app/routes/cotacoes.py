@@ -205,6 +205,27 @@ def comparativa(
     for c in cotacoes:
         por_spec.setdefault(c.especificacao_id, []).append(c)
 
+    # ── Status do pedido por spec (batch) ─────────────────────────────────────
+    ORDEM_STATUS_PEDIDO = [
+        StatusPedido.RECEBIDO,
+        StatusPedido.EM_TRANSITO,
+        StatusPedido.PEDIDO_EMITIDO,
+        StatusPedido.APROVADO,
+        StatusPedido.COTANDO,
+    ]
+    pedido_rows = (
+        db.query(Pedido.especificacao_id, Pedido.status)
+        .filter(Pedido.especificacao_id.in_(list(por_spec.keys())))
+        .all()
+    )
+    status_spec: dict[int, str] = {}
+    for row in pedido_rows:
+        atual = status_spec.get(row.especificacao_id)
+        if atual is None or (
+            ORDEM_STATUS_PEDIDO.index(row.status) < ORDEM_STATUS_PEDIDO.index(atual)
+        ):
+            status_spec[row.especificacao_id] = row.status
+
     resultado = []
     for spec_id, precos in por_spec.items():
         menor = min(c.preco for c in precos)
@@ -229,6 +250,7 @@ def comparativa(
                 sessao_id=sessao_id,
                 data_cotacao=str(sessao.data_cotacao),
                 precos=itens,
+                status_pedido=status_spec.get(spec_id),
             )
         )
     return resultado

@@ -408,6 +408,11 @@ export default function CotacaoPage() {
                               {comp.especificacao.marca && (
                                 <span className="text-xs text-muted-foreground">{comp.especificacao.marca}</span>
                               )}
+                              {comp.status_pedido && STATUS_KANBAN_CONFIG[comp.status_pedido] && (
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_KANBAN_CONFIG[comp.status_pedido].classe}`}>
+                                  {STATUS_KANBAN_CONFIG[comp.status_pedido].label}
+                                </span>
+                              )}
                             </div>
                             <p className="font-medium mt-1">{comp.especificacao.descricao}</p>
                           </div>

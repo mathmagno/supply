@@ -43,5 +43,6 @@ class CotacaoComparativaOut(BaseModel):
     sessao_id: int
     data_cotacao: str
     precos: list[PrecoFornecedorOut]
+    status_pedido: str | None = None   # status do pedido gerado para esta spec
 
     model_config = ConfigDict(from_attributes=True)

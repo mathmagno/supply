@@ -26,18 +26,25 @@ const itensNav = [
 
 export default function Sidebar() {
   return (
-    <aside className="w-60 border-r bg-card flex flex-col">
-      <div className="px-6 py-5 border-b">
-        <h1 className="text-lg font-bold text-primary tracking-tight">
-          Supply
-        </h1>
-        <p className="text-xs text-muted-foreground">Gestão de Compras</p>
+    <aside className="w-60 flex flex-col shrink-0 bg-[#0f172a]">
+      {/* Logo */}
+      <div className="px-5 py-5 border-b border-white/5">
+        <div className="flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-indigo-500 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/40">
+            <span className="text-white text-xs font-black">S</span>
+          </div>
+          <div>
+            <h1 className="text-sm font-bold text-white leading-none tracking-wide">Supply</h1>
+            <p className="text-[10px] text-slate-500 mt-0.5">Gestão de Compras</p>
+          </div>
+        </div>
       </div>
 
+      {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {itensNav.map((item, i) => {
           if ("divider" in item) {
-            return <hr key={i} className="my-2 border-border" />;
+            return <div key={i} className="my-2 border-t border-white/5" />;
           }
           const Icone = item.icone;
           return (
@@ -46,19 +53,28 @@ export default function Sidebar() {
               to={item.to}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 border",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "bg-indigo-500/15 text-indigo-300 border-indigo-500/25"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border-transparent"
                 )
               }
             >
-              <Icone className="h-4 w-4 shrink-0" />
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  <Icone className={cn("h-4 w-4 shrink-0", isActive ? "text-indigo-400" : "")} />
+                  {item.label}
+                </>
+              )}
             </NavLink>
           );
         })}
       </nav>
+
+      {/* Footer */}
+      <div className="px-4 py-3 border-t border-white/5">
+        <p className="text-[10px] text-slate-600 text-center tracking-wide">Supply v1.0</p>
+      </div>
     </aside>
   );
 }
