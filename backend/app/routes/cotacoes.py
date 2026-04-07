@@ -167,7 +167,7 @@ def comparativa(
             Pedido.fornecedor_id,
             func.count(Pedido.id).label("total"),
             func.avg(
-                func.julianday(Pedido.data_recebimento) - func.julianday(Pedido.data_pedido)
+                func.extract("epoch", func.age(Pedido.data_recebimento, Pedido.data_pedido)) / 86400
             ).label("lead_time_medio"),
             func.sum(
                 case((
