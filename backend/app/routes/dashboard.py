@@ -111,7 +111,7 @@ def sla_metrics(db: Session = Depends(get_db), _=Depends(get_usuario_atual)):
             Pedido.fornecedor_id,
             Fornecedor.nome.label("fornecedor_nome"),
             func.avg(
-                func.julianday(Pedido.data_pedido) - func.julianday(Pedido.criado_em)
+                func.extract("epoch", func.age(Pedido.data_pedido, func.cast(Pedido.criado_em, Pedido.data_pedido.type))) / 86400
             ).label("tempo_resposta_medio"),
             func.count(Pedido.id).label("total_com_emissao"),
         )
@@ -126,7 +126,7 @@ def sla_metrics(db: Session = Depends(get_db), _=Depends(get_usuario_atual)):
         db.query(
             Pedido.fornecedor_id,
             func.avg(
-                func.julianday(Pedido.data_recebimento) - func.julianday(Pedido.data_pedido)
+                func.extract("epoch", func.age(Pedido.data_recebimento, Pedido.data_pedido)) / 86400
             ).label("tempo_entrega_medio"),
             func.count(Pedido.id).label("total_recebidos"),
         )
