@@ -117,7 +117,7 @@ def sla_metrics(db: Session = Depends(get_db), _=Depends(get_usuario_atual)):
         )
         .join(Fornecedor, Pedido.fornecedor_id == Fornecedor.id)
         .filter(Pedido.data_pedido.isnot(None))
-        .group_by(Pedido.fornecedor_id)
+        .group_by(Pedido.fornecedor_id, Fornecedor.nome)
         .all()
     )
 
